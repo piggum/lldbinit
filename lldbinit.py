@@ -193,8 +193,6 @@ def __lldb_init_module(debugger, internal_dict):
     #safe, but I hate to add extra command "init" or such to install this hook...
 
     thread.start_new_thread(wait_for_hook_stop, ())
-
-    init = True
     return
 
 
@@ -1264,8 +1262,10 @@ def bp(debugger, command, result, dict):
     res = lldb.SBCommandReturnObject()   
     if not command:
         print('[-] err: need breakpoint symbol!')
-    lldb.debugger.GetCommandInterpreter().HandleCommand("breapoint set --name", res)
-    
+    target = lldb.debugger.GetSelectedTarget()
+    if target:
+        bp = target.BreakpointCreateByName(command, target.GetExecutable().GetFilename())  
+        print bp
 
 '''
     Handles 'u' command which displays instructions. Also handles output of
