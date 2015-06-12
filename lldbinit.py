@@ -8,63 +8,9 @@ import  struct
 import  argparse
 import  subprocess
 
-"""
-Similar implementation of .gdbinit from fG! for lldb in python
-
-    How to install it:
-    cp lldbinit.py /Library/Python/2.7/site-packages
-    in $HOME/.lldbinit add:
-    command script import lldbinit
-
-    If you want latest lldb, to compile it from svn we need to do:
-    svn co http://llvm.org/svn/llvm-project/lldb/trunk lldb
-    xcodebuild -configuration Release
-
-Commands which are implemented:
-    stepo       - step over some instructions (call/movs/stos/cmps/loop)
-    dd          - dump hex data at certain address (keep compatibility with .gdbinit)
-              this shoud be db command
-    ctx/context - dump registers and assembly
-    lb      - load breakpoints from file and apply them (currently only func names are applied)
-    lb_rva      - load breakpoints from file and apply to main executable, only RVA in this case
-              and command will determine main program base and apply breaks
-    u       - dump instructions at certain address (SoftICE like u command style)
-    ddword      - dump data as dword
-    dq      - dump data as qword
-    dw      - dump data as word
-    iphone      - connect to debugserver running on iPhone
-    findmem     - command to search memory
-              [options]
-              -s searches for specified string
-              -u searches for specified unicode string
-                      -b searches binary (eg. -b 4142434445 will find ABCDE anywhere in mem)
-              -d searches dword  (eg. -d 0x41414141)
-                      -q searches qword  (eg. -d 0x4141414141414141)
-              -f loads patern from file if it's tooooo big to fit into any of specified
-                         options
-              -c specify if you want to find N occurances (default is all)
-    bt      - broken... and removed, now thread/frame information is by default shown on every
-                  hook-stop by lldb itself...
-
-    hook-stop can be added only when target exists, before it's not possible (maybe in later versions
-    of lldb it is or will be possible but...). Trick to get arround this is to create thread which will
-    try to add hook-stop, and will continue doing so until it's done. This could cause some raise conditions
-    as I don't know if this is thread safe, however in my testing (and using it) it worked quite well so
-    I keep using it instead of adding extra command "init" or such when target is created...
-
-    Currently registers dump are done for i386/x86_64/arm
-
-    For supported ARM types for iPhone check here:
-        source/Plugins/Platform/MacOSX/PlatformDarwin.cpp
-        PlatformDarwin::ARMGetSupportedArchitectureAtIndex  <-- maybe wrong, but you have
-                                    idea what they support
-
-"""
 
 if __name__ == "__main__":
     print("Run only as script from lldb... Not as standalone program")
-
-MODULE_NAME=__name__
 
 old_eax = 0
 old_ecx = 0
@@ -138,18 +84,13 @@ COLOR_HIGHLIGHT_LINE = CYAN
 
 arm_type = "thumbv7-apple-ios"
 
-GlobalListOutput = []
-
-
-
 def wait_for_hook_stop():
     while True:
         res = lldb.SBCommandReturnObject()
         lldb.debugger.GetCommandInterpreter().HandleCommand("target stop-hook add -o \"HandleHookStopOnTarget\"", res)
         if res.Succeeded() == True:
-            return;
-        time.sleep(0.1)
-
+            return
+        time.sleep(.1)
 
 
 def __lldb_init_module(debugger, internal_dict):
@@ -160,27 +101,28 @@ def __lldb_init_module(debugger, internal_dict):
     if 'lldbinit_init' in os.environ:
         return
     print "[!] LLDB helper init!"
-
     os.environ["lldbinit_init"] = '1'
 
     res = lldb.SBCommandReturnObject()
     lldb.debugger.GetCommandInterpreter().HandleCommand("settings set target.x86-disassembly-flavor intel", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.stepo stepo", res)
+    lldb.debugger.GetCommandInterpreter().HandleCommand("command alias lm image list", res)    
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.HandleHookStopOnTarget HandleHookStopOnTarget", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.dc dc", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.si si", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.r  r", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.r  run", res)
+    lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.HandleHookStopOnTarget reg", res)    
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.HandleHookStopOnTarget ctx", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.HandleHookStopOnTarget context", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.DumpInstructions u", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.LoadBreakPoints lb", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.bp bp", res)
+    lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.bc bc", res)    
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.bl bl", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.dq dq", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.dd dd", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.dw dw", res)
-    lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.IphoneConnect iphone", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.findmem findmem", res)
 
 
@@ -189,11 +131,12 @@ def __lldb_init_module(debugger, internal_dict):
     #safe, but I hate to add extra command "init" or such to install this hook...
 
     thread.start_new_thread(wait_for_hook_stop, ())
-    return
+    
 
 
 def get_arch():
     return lldb.debugger.GetSelectedTarget().triple.split('-')[0]
+
 def get_frame():
     ret = None
     for t in get_process():
@@ -216,13 +159,13 @@ def evaluate(command):
 
 def is_i386():
     arch = get_arch()
-    if arch == "i386":
+    if '386' in get_arch():
         return True
     return False
 
 def is_x64():
     arch = get_arch()
-    if arch == "x86_64":
+    if 'x86_64' in arch:
         return True
     return False
 
@@ -1031,18 +974,18 @@ def get_GPRs():
 
 def HandleHookStopOnTarget(debugger, command, result, dict):
     # Don't display anything if we're inside Xcode
-    if os.getenv('PATH').startswith('/Applications/Xcode.app'):
-        return
+
+    #if os.getenv('PATH').startswith('/Applications/Xcode.app'):
+    #    return
 
     global GlobalListOutput
     global arm_type
     GlobalListOutput = []
-    print 'asd'
     res = lldb.SBCommandReturnObject()
     debugger.SetAsync(True)
     frame = get_frame()
     if not frame: return
-
+    
     thread= frame.GetThread()
     while True:
         frame = get_frame()
@@ -1117,25 +1060,23 @@ def HandleHookStopOnTarget(debugger, command, result, dict):
         output("\n")
         color(COLOR_SEPARATOR)
     if get_pointer_size() == 4: #is_i386() or is_arm():
-        output("---------------------------------------------------------------------------------------")
+        output("---------------------------------------------------------------------------------------\n")
     elif get_pointer_size() == 8: #is_x64():
-        output("-----------------------------------------------------------------------------------------------------------------------------")
+        output("-----------------------------------------------------------------------------------------------------------------------------\n")
     color_reset()
     print("\n")
 
-    output("[!] Stop reason : " + str(thread.GetStopDescription(100)))
+    output("[!] Stop reason : %s\n" % str(thread.GetStopDescription(100)))
     output("\r\n");
-    data = "".join(GlobalListOutput)
 
-    result.PutCString(data)
+    result.PutCString("".join(GlobalListOutput))
     result.SetStatus(lldb.eReturnStatusSuccessFinishResult)
-    return 0
 
 
 def LoadBreakPoints(debugger, command, result, dict):
     with file(cmd, 'rb') as f: buf = f.read()
     for i in buf.splitlines():
-                target = lldb.debugger.GetSelectedTarget()
+        target = lldb.debugger.GetSelectedTarget()
         if i.startswith("0x"):
             lldb.debugger.GetCommandInterpreter().HandleCommand("breakpoint set --address %s" % i, res)
         else:
@@ -1191,6 +1132,18 @@ def bp(debugger, command, result, dict):
             lldb.debugger.GetCommandInterpreter().HandleCommand("breakpoint set --name %s" % cmd, res)
         output(res.GetOutput())
 
+    result.PutCString("".join(GlobalListOutput))
+    result.SetStatus(lldb.eReturnStatusSuccessFinishResult)
+    
+def bc(debugger, command, result, dict):
+    global GlobalListOutput
+    GlobalListOutput = []
+    debugger.SetAsync(True)
+    res = lldb.SBCommandReturnObject()
+    target = lldb.debugger.GetSelectedTarget()
+    output("[!] Deleting all breakpoints!!!")
+    if not target.DeleteAllBreakpoints():
+        output('[-] err: cannot delete all breakpoints\n')
     result.PutCString("".join(GlobalListOutput))
     result.SetStatus(lldb.eReturnStatusSuccessFinishResult)
 
@@ -1646,16 +1599,17 @@ def dw(debugger, command, result, dict):
                 szaddr = "0x%08X" % value
             else: #is_x64():
                 szaddr = "0x%016X" % value
-            output("\033[1m%s :\033[0m %04X %04X %04X %04X %04X %04X %04X %04X \033[1m%s\033[0m" % (szaddr,
-                                                                                                            data[0],
-                                                                                                            data[1],
-                                                                                                            data[2],
-                                                                                                            data[3],
-                                                                                                            data[4],
-                                                                                                            data[5],
-                                                                                                            data[6],
-                                                                                                            data[7],
-                                                                                                            quotechars(membuff[index:index+0x10])))
+            output("\033[1m%s :\033[0m %04X %04X %04X %04X \%04X %04X %04X %04X \033[1m%s\033[0m" % (szaddr,
+                                                                                                    data[0],
+                                                                                                    data[1],
+                                                                                                    data[2],
+                                                                                                    data[3],
+                                                                                                    data[4],
+                                                                                                    data[5],
+                                                                                                    data[6],
+                                                                                                    data[7],
+                                                                                                    quotechars(membuff[index:index+0x10]))
+                   )
             if index + 0x10 != 0x100:
                 output("\n")
             index += 0x10
