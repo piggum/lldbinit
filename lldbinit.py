@@ -48,23 +48,6 @@ old_r15 = 0
 old_rflags = 0
 old_rip = 0
 
-old_arm_r0  = 0
-old_arm_r1  = 0
-old_arm_r2  = 0
-old_arm_r3  = 0
-old_arm_r4  = 0
-old_arm_r5  = 0
-old_arm_r6  = 0
-old_arm_r7  = 0
-old_arm_r8  = 0
-old_arm_r9  = 0
-old_arm_r10 = 0
-old_arm_r11 = 0
-old_arm_r12 = 0
-old_arm_sp  = 0
-old_arm_lr  = 0
-old_arm_pc  = 0
-old_arm_cpsr    = 0
 
 BLACK = 0
 RED = 1
@@ -82,8 +65,6 @@ COLOR_SEPARATOR = BLUE
 COLOR_CPUFLAGS = RED
 COLOR_HIGHLIGHT_LINE = CYAN
 
-arm_type = "thumbv7-apple-ios"
-
 def wait_for_hook_stop():
     while True:
         res = lldb.SBCommandReturnObject()
@@ -100,7 +81,7 @@ def __lldb_init_module(debugger, internal_dict):
     # make sure we do not load twice
     if 'lldbinit_init' in os.environ:
         return
-    print "[!] LLDB helper init!"
+    print("[!] LLDB helper init!")
     os.environ["lldbinit_init"] = '1'
 
     res = lldb.SBCommandReturnObject()
@@ -755,200 +736,6 @@ def dump_cpsr(cpsr):
     else:
         output("t")
 
-def regarm():
-    global  old_arm_r0
-    global  old_arm_r1
-    global  old_arm_r2
-    global  old_arm_r3
-    global  old_arm_r4
-    global  old_arm_r5
-    global  old_arm_r6
-    global  old_arm_r7
-    global  old_arm_r8
-    global  old_arm_r9
-    global  old_arm_r10
-    global  old_arm_r11
-    global  old_arm_r12
-    global  old_arm_sp
-    global  old_arm_lr
-    global  old_arm_pc
-    global  old_arm_cpsr
-
-    color(COLOR_REGNAME)
-    output("  R0:  ")
-    r0 = int(get_register("r0"), 16)
-    if r0 == old_arm_r0:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r0))
-    old_arm_r0 = r0
-
-    color(COLOR_REGNAME)
-    output("  R1:  ")
-    r1 = int(get_register("r1"), 16)
-    if r1 == old_arm_r1:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r1))
-    old_arm_r1 = r1
-
-    color(COLOR_REGNAME)
-    output("  R2:  ")
-    r2 = int(get_register("r2"), 16)
-    if r2 == old_arm_r2:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r2))
-    old_arm_r2 = r2
-
-    color(COLOR_REGNAME)
-    output("  R3:  ")
-    r3 = int(get_register("r3"), 16)
-    if r3 == old_arm_r3:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r3))
-    old_arm_r3 = r3
-
-    output(" ")
-    color_bold()
-    color_underline()
-    color(COLOR_CPUFLAGS)
-    cpsr = int(get_register("cpsr"), 16)
-    dump_cpsr(cpsr)
-    color_reset()
-
-    output("\n")
-
-
-    color(COLOR_REGNAME)
-    output("  R4:  ")
-    r4 = int(get_register("r4"), 16)
-    if r4 == old_arm_r4:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r4))
-    old_arm_r4 = r4
-
-    color(COLOR_REGNAME)
-    output("  R5:  ")
-    r5 = int(get_register("r5"), 16)
-    if r5 == old_arm_r5:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r5))
-    old_arm_r5 = r5
-
-    color(COLOR_REGNAME)
-    output("  R6:  ")
-    r6 = int(get_register("r6"), 16)
-    if r6 == old_arm_r6:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r6))
-    old_arm_r6 = r6
-
-    color(COLOR_REGNAME)
-    output("  R7:  ")
-    r7 = int(get_register("r7"), 16)
-    if r7 == old_arm_r7:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r7))
-    old_arm_r7 = r7
-
-    output("\n")
-
-    color(COLOR_REGNAME)
-    output("  R8:  ")
-    r8 = int(get_register("r8"), 16)
-    if r8 == old_arm_r8:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r8))
-    old_arm_r8 = r8
-
-    color(COLOR_REGNAME)
-    output("  R9:  ")
-    r9 = int(get_register("r9"), 16)
-    if r9 == old_arm_r9:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r9))
-    old_arm_r9 = r9
-
-    color(COLOR_REGNAME)
-    output("  R10: ")
-    r10 = int(get_register("r10"), 16)
-    if r10 == old_arm_r10:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r10))
-    old_arm_r10 = r10
-
-    color(COLOR_REGNAME)
-    output("  R11: ")
-    r11 = int(get_register("r11"), 16)
-    if r11 == old_arm_r11:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r11))
-    old_arm_r11 = r11
-
-    output("\n")
-
-    color(COLOR_REGNAME)
-    output("  R12: ")
-    r12 = int(get_register("r12"), 16)
-    if r12 == old_arm_r12:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (r12))
-    old_arm_r12 = r12
-
-    color(COLOR_REGNAME)
-    output("  SP:  ")
-    sp = int(get_register("sp"), 16)
-    if sp == old_arm_sp:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (sp))
-    old_arm_sp = sp
-
-    color(COLOR_REGNAME)
-    output("  LR:  ")
-    lr = int(get_register("lr"), 16)
-    if lr == old_arm_lr:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (lr))
-    old_arm_lr = lr
-
-    color(COLOR_REGNAME)
-    output("  PC:  ")
-    pc = int(get_register("pc"), 16)
-    if pc == old_arm_pc:
-        color(COLOR_REGVAL)
-    else:
-        color(COLOR_REGVAL_MODIFIED)
-    output("0x%08X" % (pc))
-    old_arm_pc = pc
-    output("\n")
 
 def print_registers():
     arch = get_arch()
@@ -956,8 +743,7 @@ def print_registers():
         reg32()
     elif is_x64():
         reg64()
-    elif is_arm():
-        regarm()
+
 
 def get_GPRs():
     """Returns the general purpose registers of the frame as an SBValue.
@@ -979,7 +765,6 @@ def HandleHookStopOnTarget(debugger, command, result, dict):
     #    return
 
     global GlobalListOutput
-    global arm_type
     GlobalListOutput = []
     res = lldb.SBCommandReturnObject()
     debugger.SetAsync(True)
@@ -996,14 +781,13 @@ def HandleHookStopOnTarget(debugger, command, result, dict):
             break
 
     arch = get_arch()
-    if not is_i386() and not is_x64() and not is_arm():
-        #this is for ARM probably in the future... when I will need it...
+    if not is_i386() and not is_x64():
         print("Unknown architecture : " + arch)
         return
 
     output("\n")
     color(COLOR_SEPARATOR)
-    if is_i386() or is_arm():
+    if is_i386():
         output("---------------------------------------------------------------------------------")
     elif is_x64():
         output("-----------------------------------------------------------------------------------------------------------------------")
@@ -1014,7 +798,7 @@ def HandleHookStopOnTarget(debugger, command, result, dict):
     print_registers()
 
     color(COLOR_SEPARATOR)
-    if is_i386() or is_arm():
+    if is_i386():
         output("---------------------------------------------------------------------------------")
     elif is_x64():
         output("-----------------------------------------------------------------------------------------------------------------------")
@@ -1026,20 +810,8 @@ def HandleHookStopOnTarget(debugger, command, result, dict):
         pc = get_register("eip")
     elif is_x64():
         pc = get_register("rip")
-    elif is_arm():
-        pc = get_register("pc")
 
-    if is_arm():
-        cpsr = int(get_register("cpsr"), 16)
-        t = (cpsr >> 5) & 1
-        if t:
-            #it's thumb
-            arm_type = "thumbv7-apple-ios"
-        else:
-            arm_type = "armv7-apple-ios"
-            lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble -A " + arm_type + " --start-address=" + pc + " --count=8", res)
-    else:
-        lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble --start-address=" + pc + " --count=8", res)
+    lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble --start-address=" + pc + " --count=8", res)
     data = res.GetOutput()
 
     data = data.split("\n")
@@ -1141,9 +913,13 @@ def bc(debugger, command, result, dict):
     debugger.SetAsync(True)
     res = lldb.SBCommandReturnObject()
     target = lldb.debugger.GetSelectedTarget()
+    if target.GetNumBreakpoints() == 0:
+        output("[!] no breakpoints set!")
+        return
     output("[!] Deleting all breakpoints!!!")
     if not target.DeleteAllBreakpoints():
         output('[-] err: cannot delete all breakpoints\n')
+        
     result.PutCString("".join(GlobalListOutput))
     result.SetStatus(lldb.eReturnStatusSuccessFinishResult)
 
@@ -1174,37 +950,20 @@ def DumpInstructions(debugger, command, result, dict):
     global arm_type
     GlobalListOutput = []
 
-    if is_arm():
-        cpsr = int(get_register("cpsr"), 16)
-        t = (cpsr >> 5) & 1
-        if t:
-            #it's thumb
-            arm_type = "thumbv7-apple-ios"
-        else:
-            arm_type = "armv7-apple-ios"
-
+   
     res = lldb.SBCommandReturnObject()
     cmd = command.split()
     if len(cmd) == 0 or len(cmd) > 2:
-        if is_arm():
-            lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble -A " +arm_type + " --start-address=$pc --count=8", res)
-        else:
-            lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble --start-address=$pc --count=8", res)
+        lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble --start-address=$pc --count=8", res)
+   
     elif len(cmd) == 1:
-        if is_arm():
-            lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble -A "+arm_type+" --start-address=" + cmd[0] + " --count=8", res)
-        else:
-            lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble --start-address=" + cmd[0] + " --count=8", res)
-    else:
-        if is_arm():
-            lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble -A "+arm_type+" --start-address=" + cmd[0] + " --count="+cmd[1], res)
-            lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble --start-address=" + cmd[0] + " --count="+cmd[1], res)
+        lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble --start-address=" + cmd[0] + " --count=8", res)
 
     if res.Succeeded() == True:
         output(res.GetOutput())
     else:
         output("Error getting instructions for : " + command)
-
+    
     result.PutCString("".join(GlobalListOutput))
     result.SetStatus(lldb.eReturnStatusSuccessFinishResult)
 
@@ -1232,27 +991,15 @@ def stepo(debugger, command, result, dict):
     global arm_type
     GlobalListOutput = []
     debugger.SetAsync(True)
-    arch = get_arch()
 
     result.SetStatus(lldb.eReturnStatusSuccessFinishNoResult)
 
     err = lldb.SBError()
     target = lldb.debugger.GetSelectedTarget()
 
-    if is_arm():
-        cpsr = int(get_register("cpsr"), 16)
-        t = (cpsr >> 5) & 1
-        if t:
-            #it's thumb
-            arm_type = "thumbv7-apple-ios"
-        else:
-            arm_type = "armv7-apple-ios"
-
-        res = lldb.SBCommandReturnObject()
-    if is_arm():
-        lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble -A " +arm_type + " --raw --start-address=$pc --count=2", res)
-    else:
-        lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble --raw --start-address=$pc --count=2", res)
+  
+    res = lldb.SBCommandReturnObject()
+    lldb.debugger.GetCommandInterpreter().HandleCommand("disassemble --raw --start-address=$pc --count=2", res)
 
     #lldb.debugger.GetCommandInterpreter().HandleCommand("x/2i $pc", res)
     if res.Succeeded() != True:
@@ -1282,27 +1029,8 @@ def stepo(debugger, command, result, dict):
     pc_inst = stuff[0].split(": ")[1]
     pc_inst = pc_inst.split()[0]
 
-    if is_arm():
-        if "blx" in pc_inst or "bl" in pc_inst:
-            breakpoint = target.BreakpointCreateByAddress(next_pc)
-            breakpoint.SetThreadID(get_frame().GetThread().GetThreadID())
-            breakpoint.SetOneShot(True)
-            breakpoint.SetThreadID(get_frame().GetThread().GetThreadID())
-            target.GetProcess().Continue()
-            #debugger.HandleCommand("c")
-            #debugger.HandleCommand("thread step-inst-over")
-            return
-        else:
-            lldb.debugger.GetSelectedTarget().process.selected_thread.StepInstruction(False)
-            #debugger.HandleCommand("si")
-            return
-        if "call" in pc_inst or "movs" in pc_inst or "stos" in pc_inst or "loop" in pc_inst or "cmps" in pc_inst:
-            breakpoint = target.BreakpointCreateByAddress(next_pc)
-            breakpoint.SetOneShot(True)
-            breakpoint.SetThreadID(get_frame().GetThread().GetThreadID())
-            target.GetProcess().Continue()
-    else:
-        lldb.debugger.GetSelectedTarget().process.selected_thread.StepInstruction(False)
+
+    lldb.debugger.GetSelectedTarget().process.selected_thread.StepInstruction(False)
 
 def hexdump(addr, chars, sep, width ):
     l = []
@@ -1329,26 +1057,25 @@ def quotechars( chars ):
             data += "."
     return data
 
-'''
-    Output nice hexdump... Should be db (in the future) so we can give dw/dd/dq
-    outputs as it's done with any normal debugger...
-'''
+
+def get_addr_from_sym(val):
+    value = get_frame().EvaluateExpression(val[0])
+    if value.GetValue() == None:
+        value = get_frame().EvaluateExpression('0x'+str(val[0]))
+    return value.GetValue()
+
 def dc(debugger, command, result, dict):
     global GlobalListOutput
     GlobalListOutput = []
     command = command.split()
-
-    value = get_frame().EvaluateExpression(command[0])
-    if value.IsValid() == False:
+    
+    value = get_addr_from_sym(command)
+    if value == None:
         output("Error evaluating expression : %s" % command[0])
         result.PutCString("".join(GlobalListOutput))
-        return
-    try:
-        value = int(value.GetValue(), 10)
-    except:
-        output("Error evaluating expression : " + command)
-        result.PutCString("".join(GlobalListOutput))
-        return
+        return        
+    
+    value = int(value,0)    
 
     err = lldb.SBError()
     target = lldb.debugger.GetSelectedTarget()
@@ -1364,13 +1091,13 @@ def dc(debugger, command, result, dict):
         size = 0x100    
     
     for idx in range(size, 0, -1):
-           membuff = target.GetProcess().ReadMemory(value, idx, err)
-           if err.Success() == False and idx == 0:
-               output(str(err))
-               result.PutCString("".join(GlobalListOutput))
-               return
-           if err.Success() == True:
-               break
+        membuff = target.GetProcess().ReadMemory(value, idx, err)
+        if err.Success() == False and idx == 0:
+            output(str(err))
+            result.PutCString("".join(GlobalListOutput))
+            return
+        if err.Success() == True:
+            break
     
     color(BLUE)
     output("0x0%016X - 0x%016X - %04d bytes" %  (value, value+size, size))
@@ -1415,18 +1142,15 @@ def dq(debugger, command, result, dict):
     GlobalListOutput = []
 
     command = command.split()
-    value = get_frame().EvaluateExpression(command[0])
-    if value.IsValid() == False:
-        output("Error evaluating expression : " + command[0])
+    
+    value = get_addr_from_sym(command)
+    if value == None:
+        output("Error evaluating expression : %s" % command[0])
         result.PutCString("".join(GlobalListOutput))
-        return
-    try:
-        value = int(value.GetValue(), 10)
-    except:
-        output("Error evaluating expression : " + command)
-        result.PutCString("".join(GlobalListOutput))
-        return
-
+        return        
+    
+    value = int(value,0)    
+   
     err = lldb.SBError()
     target = lldb.debugger.GetSelectedTarget()
 
@@ -1484,18 +1208,15 @@ def dd(debugger, command, result, dict):
     GlobalListOutput = []
 
     command = command.split()
-    value = get_frame().EvaluateExpression(command[0])
-    if value.IsValid() == False:
-        output("Error evaluating expression : " + command[0])
+    
+    value = get_addr_from_sym(command)
+    if value == None:
+        output("Error evaluating expression : %s" % command[0])
         result.PutCString("".join(GlobalListOutput))
-        return
-    try:
-        value = int(value.GetValue(), 10)
-    except:
-        output("Error evaluating expression : " + command[0])
-        result.PutCString("".join(GlobalListOutput))
-        return
-
+        return        
+    
+    value = int(value,0)    
+    
     err = lldb.SBError()
 
     target = lldb.debugger.GetSelectedTarget()
@@ -1553,19 +1274,15 @@ def dw(debugger, command, result, dict):
     global GlobalListOutput
     GlobalListOutput = []
 
-    arch = get_arch()
-    value = get_frame().EvaluateExpression(command)
-    print value
-    if value.IsValid() == False:
-        output("Error evaluating expression : " + command)
+    command = command.split()
+    
+    value = get_addr_from_sym(command)
+    if value == None:
+        output("Error evaluating expression : %s" % command[0])
         result.PutCString("".join(GlobalListOutput))
-        return
-    try:
-        value = int(value.GetValue(), 10)
-    except:
-        output("Error evaluating expression : " + command)
-        result.PutCString("".join(GlobalListOutput))
-        return
+        return        
+    
+    value = int(value,0)
 
     err = lldb.SBError()
     target = lldb.debugger.GetSelectedTarget()
