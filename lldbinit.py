@@ -97,7 +97,8 @@ def __lldb_init_module(debugger, internal_dict):
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.HandleHookStopOnTarget ctx", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.HandleHookStopOnTarget context", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.DumpInstructions u", res)
-    lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.LoadBreakPoints lb", res)
+    lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.loadbp loadbp", res)
+    lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.savebp savebp", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.bp bp", res)
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.bc bc", res)    
     lldb.debugger.GetCommandInterpreter().HandleCommand("command script add -f lldbinit.bl bl", res)
@@ -759,11 +760,6 @@ def get_GPRs():
     return get_registers("general purpose")
 
 def HandleHookStopOnTarget(debugger, command, result, dict):
-    # Don't display anything if we're inside Xcode
-
-    #if os.getenv('PATH').startswith('/Applications/Xcode.app'):
-    #    return
-
     global GlobalListOutput
     GlobalListOutput = []
     res = lldb.SBCommandReturnObject()
@@ -845,8 +841,11 @@ def HandleHookStopOnTarget(debugger, command, result, dict):
     result.SetStatus(lldb.eReturnStatusSuccessFinishResult)
 
 
-def LoadBreakPoints(debugger, command, result, dict):
-    with file(cmd, 'rb') as f: buf = f.read()
+def loadbp(debugger, command, result, dict):
+    if not command:
+        command = 'tmp.lldb'
+        
+    with file(command, 'rb') as f: buf = f.read()
     for i in buf.splitlines():
         target = lldb.debugger.GetSelectedTarget()
         if i.startswith("0x"):
@@ -854,6 +853,25 @@ def LoadBreakPoints(debugger, command, result, dict):
         else:
             lldb.debugger.GetCommandInterpreter().HandleCommand("breakpoint set --name %s" % i, res)
         output(res.GetOutput())
+    
+    result.PutCString("".join(GlobalListOutput))
+    result.SetStatus(lldb.eReturnStatusSuccessFinishResult)    
+
+def savebp(debugger, command, result, dict):
+    
+    if not command:
+        command = 'tmp.lldb'
+    
+    target = lldb.debugger.GetSelectedTarget()    
+    
+    if target.GetNumBreakpoints() == 0:
+        print("[!] no bp's, nothing to save!")
+        return
+    with file(command, 'wb') as f: 
+        for i in range(target.GetNumBreakpoints()):
+            bp = target.GetBreakpointAtIndex(i)
+            print bp
+            
 
 '''
     si, c, r instruction override default ones to consume their output.
@@ -915,10 +933,11 @@ def bc(debugger, command, result, dict):
     target = lldb.debugger.GetSelectedTarget()
     if target.GetNumBreakpoints() == 0:
         output("[!] no breakpoints set!")
-        return
-    output("[!] Deleting all breakpoints!!!")
-    if not target.DeleteAllBreakpoints():
-        output('[-] err: cannot delete all breakpoints\n')
+        
+    else:
+        output("[!] Deleting all breakpoints!!!")
+        if not target.DeleteAllBreakpoints():
+            output('[-] err: cannot delete all breakpoints\n')
         
     result.PutCString("".join(GlobalListOutput))
     result.SetStatus(lldb.eReturnStatusSuccessFinishResult)
